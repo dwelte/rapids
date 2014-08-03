@@ -14,9 +14,10 @@
 
 (defrecord MapStateMachine [state]
   StateMachine
-  (process [_ {:keys [message_type value]}]
-    :snapshot (reset! state value)
-    :assoc    (swap! #(assoc % (first value) (second value)))
-    :dissoc   (swap! #(dissoc % value)))
+  (process [_ {:keys [message-type value]}]
+    (case message-type
+      :snapshot (reset! state value)
+      :assoc    (swap! state #(assoc % (first value) (second value)))
+      :dissoc   (swap! state #(dissoc % value))))
   (snapshot [_] state))
 
