@@ -29,7 +29,16 @@
       (persist-append-entries prev-log-index entries)
       (update-commit-index leader-commit)))
 
-(defn write-entries-process
+(defn trim-log-to
+  [server-state prev-log-index]
+  (let [first-index      (inc prev-log-index)
+        old-logs         (server-state :logs)
+        new-logs         entries
+        conflicting-ind  (find-first-conflicting-index first-index old-logs new-logs)
+        trimmed-logs     (if conflicting-ind (subvec old-logs 0 conflicting-ind) old-logs)]
+    (assoc server-state :logs trimmed-logs)))
+
+(defn append-entries-process
   [server-state {:keys [term
                         leader-id
                         prev-log-index
